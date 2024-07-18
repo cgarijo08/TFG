@@ -1,5 +1,7 @@
 import cv2
 import os
+import traceback
+from shutil import rmtree
 import numpy as np
 import argparse
 from tqdm import tqdm
@@ -13,9 +15,48 @@ from utils.get_patch_features import (
     get_patch_features
 )
 import json
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+DIRECTORY_NOT_EXISTS = 0
+CANT_LOAD_IMAGE = 1
+WHITE_IMAGE = 2
+NO_CONTOURS = 3
+
+# Delete previous logs
+for log in os.listdir('logs'):
+    if os.path.isdir(os.path.join('logs', log)):
+        rmtree(os.path.join('logs', log))
+    else:
+        os.remove(os.path.join('logs', log))
+
+def setup_logger(type_message, patient = None):
+    if logger.hasHandlers():
+        logger.handlers.clear()
+    if type_message == DIRECTORY_NOT_EXISTS:
+        file_handler = logging.FileHandler('./logs/directory_error.log', encoding='utf-8', mode='a')
+    elif type_message == CANT_LOAD_IMAGE:
+        file_handler = logging.FileHandler('./logs/load_image_error.log', encoding='utf-8', mode='a')
+    elif type_message == WHITE_IMAGE:
+        log_path = os.path.join('logs', 'white', patient)
+        os.makedirs(log_path, exist_ok=True)
+        file_handler = logging.FileHandler(os.path.join(log_path, 'white_image.log'), encoding='utf-8', mode='a')
+    elif type_message == NO_CONTOURS:
+        log_path = os.path.join('logs', 'no_contours', patient)
+        os.makedirs(log_path, exist_ok=True)
+        file_handler = logging.FileHandler(os.path.join(log_path, 'no_contours.log'), encoding='utf-8', mode='a')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s %(message)s"))
+    logger.addHandler(file_handler)
 
 def extract_number(filename):
     return int(filename.split('.')[0])
+
+def is_white_image(img):
+    if np.var(img[:,:,0]) < 40:
+        return True
+    return False
 
 def apply_morf_transformation(type:str, kern, iterations, image):
     if type == 'erode':
@@ -50,7 +91,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     if full_image_path:
         path_to_full_image = full_image_path
     else:
-        path_to_full_image='/home/gdem/Documents/Data/Pre-proj-images/1198/RGB_WS.png'
+        path_to_full_image='/home/gdem/Documents/Data/TFG/1198/RGB_WS.png'
     if path_to_full_image.split('/')[-2] == 'data':
         patient = path_to_full_image.split('/')[-3]
         tile = ''
@@ -63,20 +104,32 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     if not os.path.isfile(path_to_full_image):
         raise FileNotFoundError('The path you introduced doesn\'t refer to any existing image. Please, make sure you introduce the correct path')
     full_image=cv2.imread(path_to_full_image)
+    if is_white_image(full_image):
+        setup_logger(WHITE_IMAGE, patient)
+        logger.info(f"Tile: {tile} from patient: {patient} is a white image")
+        cv2.namedWindow('H', cv2.WINDOW_NORMAL)
+        cv2.resizeWindow('H', 1900, 1000)
+        cv2.imshow('H', full_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        return
     patch_features = {}
     
 
     # Creating the patient directory inside 'data/'
-    patient_path = 'data/'+patient
-    os.makedirs(patient_path, exist_ok=True) 
+    patch_path = 'data/'+patient
+    if tile != '':
+        patch_path = os.path.join(patch_path, tile)
+    os.makedirs(patch_path, exist_ok=True) 
     print(patient, tile)
 
-    # Saving a compressed image for visualization 
-    path_to_compressed_image=patient_path +'/compressed_image.jpg'
-    compressed_image=cv2.resize(full_image, (1920, 1080))
-    compression_parms=[cv2.IMWRITE_JPEG_QUALITY, 60]
+    # Saving a compressed image for visualization
+    if write_intermediate_imgs:
+        path_to_compressed_image=patch_path +'/compressed_image.jpg'
+        compressed_image=cv2.resize(full_image, (1920, 1080))
+        compression_parms=[cv2.IMWRITE_JPEG_QUALITY, 60]
 
-    cv2.imwrite(path_to_compressed_image, compressed_image, compression_parms)
+        cv2.imwrite(path_to_compressed_image, compressed_image, compression_parms)
 
     if False:
         if False:
@@ -90,8 +143,8 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
         patch_of_the_image = get_patch_of_image(full_image, patch_center=patch_center, patch_width=patch_width, patch_height=patch_height)
 
         # Creating directory of the patch
-        patch_path = str(patch_center[0]) + '-' + str(patch_center[1]) + '_' + str(patch_width) + 'x' + str(patch_height)
-        patch_path = patient_path + '/' + patch_path
+        patch_coords = str(patch_center[0]) + '-' + str(patch_center[1]) + '_' + str(patch_width) + 'x' + str(patch_height)
+        patch_path = patch_path + '/' + patch_coords
 
         os.makedirs(patch_path, exist_ok=True)
 
@@ -100,7 +153,6 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     else:
         patch_of_the_image = full_image
     
-    patch_path = patient
 
     # Apply Mean Shift algorithm to smooth areas in the image
     #shifted_image = cv2.pyrMeanShiftFiltering(patch_of_the_image, 20, 30)
@@ -110,15 +162,16 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
 
     # Dump the images processed with simple cv2.threshold method
     if write_intermediate_imgs:
-        folder_path = patch_path+'/processed_images/threshold/'
-        os.makedirs(folder_path, exist_ok=True)
+        folder_path = os.path.join(patch_path, 'processed_images')
+        temp_folder_path = os.path.join(folder_path, 'processed_images','threshold')
+        os.makedirs(temp_folder_path, exist_ok=True)
 
     # Obtaining the thresholded image with otsu and triangle algorithms
     _, thr_image_otsu = cv2.threshold(bw_patch_of_the_image,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
 
     # Dumping the new processed images
     if write_intermediate_imgs:
-        cv2.imwrite(folder_path+'thr_image_otsu.png', thr_image_otsu)
+        cv2.imwrite(os.path.join(temp_folder_path, 'thr_image_otsu.png'), thr_image_otsu)
 
     # ## Morphological transformation
     # Henceforth it is going to be used the image processed with the threshold method, using the threshold calculated with the OTSU algorithm.
@@ -132,8 +185,8 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     open_image_33_ell = apply_morf_transformation('opening', kern, iterations=1, image=thr_image_otsu)
 
     if write_intermediate_imgs:
-        temp_folder_path = folder_path + 'opening/'
-        cv2.imwrite(temp_folder_path + 'open_image_33_ell.png', open_image_33_ell)
+        temp_folder_path = os.path.join(folder_path, 'opening')
+        cv2.imwrite(os.path.join(temp_folder_path, 'open_image_33_ell.png'), open_image_33_ell)
 
     # It seems that the rectangular kernel can be a little aggresive to the image. It has erased some contours of the image, meanwhile, the noise difference isn't very remarkable
     # So, like the rectangular shape doesn't remove noise better than the ellipsed one, we're going to continue with the ellipsed one.
@@ -144,8 +197,8 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     closed_image_ell = apply_morf_transformation('closing', kern=np.ones((4,4), np.uint8), iterations=2, image=open_image_33_ell)
 
     if write_intermediate_imgs:
-        temp_folder_path = folder_path + 'closing/'
-        cv2.imwrite(temp_folder_path + 'closed_image_ell_44.png', closed_image_ell)
+        temp_folder_path = os.path.join(folder_path, 'closing')
+        cv2.imwrite(os.path.join(temp_folder_path, 'closed_image_ell_44.png'), closed_image_ell)
 
     # ## Contour identification
     # In this section, the functions findContours() and drawContours() are going to be used and analyzed to see if they can provide relevant information for our work. The goal is to obtain an image with just the contours of the crystals' shape.
@@ -154,11 +207,9 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     # 
     # We are going to skip for now the image after Canny algorithm because findContours() is a more powerful function that can provide more accurate information than the Canny Algorithm. Maybe the Canny algorithm can be analyzed in a parallel way from this method.
     if output is not None:
-        folder_path = output
-        os.makedirs(os.path.join(folder_path, patient), exist_ok=True)
+        os.makedirs(os.path.join(output, patient, tile), exist_ok=True)
     else:
-        os.makedirs(patch_path + '/processed_images/contour_detection', exist_ok=True)
-        folder_path = patch_path + '/processed_images/contour_detection/'
+        output = 'data'
 
     image = closed_image_ell.copy()
 
@@ -168,7 +219,8 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
                                                             # this transformation, we obtain "input_image" with 3 layer so then the contour can be drawn.
     contourned_image=cv2.drawContours(image_BGR_tocopy.copy(), contours=contours, contourIdx=-1, color=(0, 0, 255), thickness=2)#, hierarchy=hierarchy, maxLevel=7)
 
-    cv2.imwrite(os.path.join(folder_path, patient, 'contours_full.png'), contourned_image)
+    if write_intermediate_imgs:
+        cv2.imwrite(os.path.join(folder_path, patient, tile, 'contours_full.png'), contourned_image)
 
 
     biggest_contour = -1 # Biggest area calculated for the next section.
@@ -208,22 +260,40 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     image_with_children_orig = cv2.drawContours(patch_of_the_image.copy(), child_contours, -1, (0,255,0), 2)
     image_with_children_blank = cv2.drawContours(blank_image.copy(), child_contours, -1, (0,255,0), 2)
 
-    cv2.imwrite(os.path.join(folder_path, patient, 'contours_ch.png'), image_with_children_orig)
-    cv2.imwrite(os.path.join(folder_path, patient, 'contours_ch_blank.png'), image_with_children_blank)
+    if write_intermediate_imgs:
+        temp_folder_path = os.path.join(folder_path, 'contours')
+        os.makedirs(temp_folder_path, exist_ok=True)
+        cv2.imwrite(os.path.join(temp_folder_path, 'contours_ch.png'), image_with_children_orig)
+        cv2.imwrite(os.path.join(temp_folder_path, 'contours_ch_blank.png'), image_with_children_blank)
 
     # Filter the contours by area and circularity
+    # Delete the ones that have points on the border of the image
     area_threshold = 2000
     circularity_threshold = 0.1
     filtered_contours = []
     for cnt in child_contours:
+        for point in cnt:
+            if any([coord == 0 for coord in point[0]]):
+                break
+            if point[0][0] == full_image.shape[1]-1:
+                break
+            if point[0][1] == full_image.shape[0]-1:
+                break
         if cv2.contourArea(cnt) > area_threshold and get_circularity(cnt) > circularity_threshold:
             filtered_contours.append(cnt)
+    
+    if not len(filtered_contours) > 0:
+        setup_logger(NO_CONTOURS, patient)
+        logger.warning(f"Tile: {tile} from patient: {patient} has resulted in 0 contours.")
+        return
     
     filtered_contours_image_orig = cv2.drawContours(patch_of_the_image.copy(), child_contours, -1, (0,255,0), 2)
     filtered_contours_image_blank = cv2.drawContours(blank_image.copy(), child_contours, -1, (0,255,0), 2)
 
-    cv2.imwrite(os.path.join(folder_path, patient, 'filtered.png'), filtered_contours_image_orig)
-    cv2.imwrite(os.path.join(folder_path, patient, 'filtered_blank.png'), filtered_contours_image_blank)
+    cv2.imwrite(os.path.join(output, patient, tile, 'filtered.png'), filtered_contours_image_orig)
+    cv2.imwrite(os.path.join(output, patient, tile, 'filtered_blank.png'), filtered_contours_image_blank)
+
+    filtered_contours = sorted(filtered_contours, key=cv2.contourArea, reverse=True)
 
     #mean_1, mean_2 = get_mean_contour_area(filtered_contours)
     #patch_features['avg_cnt_area_children'] = {
@@ -243,8 +313,10 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     cv2.imshow(f'{patient} {tile} original', full_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    cv2.imwrite(os.path.join(output, patient, tile, "segmented.png"), image_with_shapes_and_contours)
 
-    #patch_features = get_patch_features(filtered_contours, patch_of_the_image.shape[:2])
+    if len(filtered_contours) > 0:
+        patch_features = get_patch_features(filtered_contours, patch_of_the_image.shape[:2])
 
 
     H_mean, A_mean, B_mean = get_avg_colour(patch_of_the_image)
@@ -254,10 +326,10 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
         "B": B_mean
     }
     
-    with open(os.path.join(folder_path, patient, 'patch_features.json'), 'w') as file:
+    with open(os.path.join(folder_path, patient, tile, 'patch_features.json'), 'w') as file:
         json.dump(patch_features, file, indent=4, ensure_ascii=False)
 
-def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patient_start = None):
+def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patient_start = None, write_intermediate_imgs = False):
     if not is_img_file:
         parent_folder_images = os.listdir(img_dir)
         parent_folder_images = sorted(parent_folder_images)
@@ -284,10 +356,19 @@ def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patie
                 parent_folder_images = parent_folder_images[parent_folder_images.index(patient_start):]
             for patient in parent_folder_images:
                 temp_folder = os.path.join(img_dir, patient, 'data', 'temp')
+                if not os.path.exists(temp_folder):
+                    setup_logger(DIRECTORY_NOT_EXISTS)
+                    logger.error(f"{temp_folder} PATH DOESN'T EXIST.")
+                    continue
                 temp_images = sorted(os.listdir(temp_folder), key=extract_number)
                 for temp in temp_images:
                     image_path = os.path.join(temp_folder, temp)
-                    process_image(full_image_path=image_path, is_WSI=False, output=output)
+                    try:
+                        process_image(full_image_path=image_path, is_WSI=False, output=output, write_intermediate_imgs=write_intermediate_imgs)
+                    except:
+                        setup_logger(CANT_LOAD_IMAGE)
+                        logger.error(f"Patient: {patient}, tile: {temp} COULDN'T BE PROCESSED.\nError: {traceback.format_exc()}\n\n")
+                        pass
 
     else:
         process_image(full_image_path=img_dir, is_WSI=True, output=output)
@@ -301,6 +382,7 @@ def main():
     exc_group.add_argument('-f', '--im_file', type=str, help='Image to be processed.')
     exc_group.add_argument('-d', '--im_dir', type=str, help='Specify if a a batch of images is wanted to be processed instead of an image. This argument must be a directory which contains the patient photos organised in the following way: patient_num/RGB_WS.png or patient_num/data/RGB_WS.png')
     parser.add_argument('-o', '--output', type = str, help='Specify output folder.')
+    parser.add_argument('-w', action='store_true', help='Write intermediate files in the project folder')
     parser.add_argument('--start', type=str, help='Start processing from this patient')
     args = parser.parse_args()
     images_dir = args.im_dir
@@ -314,12 +396,16 @@ def main():
         images_dir = '/media/gdem/SSD/Carlos_data/DRY_SERUMS/patients/'
     if output == None:
         output = '/home/gdem/Documents/Data/Processed_images'
+    if args.w:
+        write_intermediate_images = True
+    else:
+        write_intermediate_images = False
 
     # Creating the processed-data directory
     os.makedirs('data', exist_ok=True)
     
     if images_dir:
-        run_processing(images_dir, True, output, patient_start = start)
+        run_processing(images_dir, True, output, patient_start = 'BPM', write_intermediate_imgs=True)
     else:
         run_processing(full_image_path, output, is_img_file=True)
 

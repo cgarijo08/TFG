@@ -4,3 +4,4 @@ data
 .vscode
 pre-processing_nb.ipynb
 testing/pyriamid_mean_shift.ipynb
+logs
