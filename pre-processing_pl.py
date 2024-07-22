@@ -143,7 +143,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
         cv2.destroyAllWindows()
         return
     patch_features = {}
-    
+    visualize_imgs("IMagen 1", full_image, 0)
 
     # Creating the patient directory inside 'data/'
     patch_path = 'data/'+patient
@@ -199,16 +199,16 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     # Obtaining the thresholded image with otsu and triangle algorithms
     _, thr_image_otsu = cv2.threshold(bw_patch_of_the_image,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
     thr_image_adaptive = cv2.adaptiveThreshold(bw_patch_of_the_image[:,:], 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV , 51, 15)
-    '''cv2.namedWindow(f'{patient} {tile} adaptive', cv2.WINDOW_NORMAL)
-    cv2.namedWindow(f'{patient} {tile} original', cv2.WINDOW_NORMAL)
+    cv2.namedWindow(f'{patient} {tile} adaptive', cv2.WINDOW_NORMAL)
+    #cv2.namedWindow(f'{patient} {tile} original', cv2.WINDOW_NORMAL)
     cv2.moveWindow(f'{patient} {tile} adaptive', 0,0)
-    cv2.moveWindow(f'{patient} {tile} original', 1920, 0)
+    #cv2.moveWindow(f'{patient} {tile} original', 0, 0)
     cv2.resizeWindow(f'{patient} {tile} adaptive', 1920, 1080)
-    cv2.resizeWindow(f'{patient} {tile} original', 1620, 1050)
+    #cv2.resizeWindow(f'{patient} {tile} original', 1620, 1050)
     cv2.imshow(f'{patient} {tile} adaptive', thr_image_adaptive)
-    cv2.imshow(f'{patient} {tile} original', thr_image_otsu)
+    #cv2.imshow(f'{patient} {tile} original', thr_image_otsu)
     cv2.waitKey(0)
-    cv2.destroyWindow(f'{patient} {tile} original')'''
+    cv2.destroyWindow(f'{patient} {tile} original')
     
     contours, hierarchy = cv2.findContours(thr_image_adaptive, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
 
@@ -266,24 +266,30 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     close_image_33_ell = apply_morf_transformation('closing', kern, iterations=1, image=contourned_image)
     kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7,7))
     close_image_33_ell_2 = apply_morf_transformation('closing', kern, iterations=2, image=close_image_33_ell)
-    visualize_imgs(f"Open image {patient} {tile} 2", close_image_33_ell_2, 1)
+    visualize_imgs(f"Open image {patient} {tile} 2", close_image_33_ell_2, 0)
 
     second_contours, second_hierarchy = cv2.findContours(close_image_33_ell_2, cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
     contourned_image_2 = cv2.drawContours(np.zeros((thr_image_adaptive.shape), dtype=np.uint8), second_contours, -1, 255, 5)
-    visualize_imgs(f"Contourned image 2 {patient} {tile}", contourned_image_2, 1)
+    visualize_imgs(f"Contourned image 2 {patient} {tile}", contourned_image_2, 0)
 
     # Second area filter
+    isboundary = False
     area_filtered_second_contours = []
     for cnt in second_contours:
+        isboundary = False
         for point in cnt:
             if any([coord == 0 for coord in point[0]]):
+                isboundary = True
                 break
-            if point[0][0] == full_image.shape[1]-1:
+            if point[0][0] == full_image.shape[1]-4:
+                isboundary = True
                 break
-            if point[0][1] == full_image.shape[0]-1:
+            if point[0][1] == full_image.shape[0]-4:
+                isboundary = True
                 break
-        if cv2.contourArea(cnt) > 2000 and get_circularity(cnt) > 0.1:
-            area_filtered_second_contours.append(cnt)
+        if not isboundary:
+            if cv2.contourArea(cnt) > 2000 and get_circularity(cnt) > 0.1:
+                area_filtered_second_contours.append(cnt)
     shape_and_contourned_image = draw_shapes_and_contours(area_filtered_second_contours, np.zeros((thr_image_adaptive.shape), dtype=np.uint8))
     visualize_imgs([f"Adaptive {patient} {tile}", f"{patient} {tile}"], [thr_image_adaptive, shape_and_contourned_image], 0)
     return
@@ -533,7 +539,7 @@ def main():
     os.makedirs('data', exist_ok=True)
     
     if images_dir:
-        run_processing(images_dir, True, output, patient_start = 'CB', tile_start = 25, write_intermediate_imgs=True)
+        run_processing(images_dir, True, output, patient_start = 'CSE', tile_start = 25, write_intermediate_imgs=True)
     else:
         run_processing(full_image_path, output, is_img_file=True)
 
