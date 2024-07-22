@@ -56,6 +56,32 @@ def extract_number(filename):
 def tiff_from_number(number):
     return str(number)+".tiff"
 
+def visualize_imgs(title, image, pos):
+    if isinstance(title, list):
+        cv2.namedWindow(title[0], cv2.WINDOW_NORMAL)
+        cv2.namedWindow(title[1], cv2.WINDOW_NORMAL)
+        cv2.moveWindow(title[0], 0,0)
+        cv2.moveWindow(title[1], 1920, 0)
+        cv2.resizeWindow(title[0], 1920, 1080)
+        cv2.resizeWindow(title[1], 1620, 1050)
+        cv2.imshow(title[0], image[0])
+        cv2.imshow(title[1], image[1])
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    else:
+        if pos == 0:
+            place = 0
+            size = (1900, 1000)
+        else:
+            place = 1920
+            size = (1620, 1050)
+        cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(title, *size)
+        cv2.moveWindow(title, place, 0)
+        cv2.imshow(title, image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
 def is_white_image(img):
     if np.var(img[:,:,0]) < 40:
         return True
@@ -173,7 +199,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     # Obtaining the thresholded image with otsu and triangle algorithms
     _, thr_image_otsu = cv2.threshold(bw_patch_of_the_image,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
     thr_image_adaptive = cv2.adaptiveThreshold(bw_patch_of_the_image[:,:], 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV , 51, 15)
-    cv2.namedWindow(f'{patient} {tile} adaptive', cv2.WINDOW_NORMAL)
+    '''cv2.namedWindow(f'{patient} {tile} adaptive', cv2.WINDOW_NORMAL)
     cv2.namedWindow(f'{patient} {tile} original', cv2.WINDOW_NORMAL)
     cv2.moveWindow(f'{patient} {tile} adaptive', 0,0)
     cv2.moveWindow(f'{patient} {tile} original', 1920, 0)
@@ -182,7 +208,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     cv2.imshow(f'{patient} {tile} adaptive', thr_image_adaptive)
     cv2.imshow(f'{patient} {tile} original', thr_image_otsu)
     cv2.waitKey(0)
-    cv2.destroyWindow(f'{patient} {tile} original')
+    cv2.destroyWindow(f'{patient} {tile} original')'''
     
     contours, hierarchy = cv2.findContours(thr_image_adaptive, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
 
@@ -229,13 +255,22 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
             area_filtered_contours.append(cnt)
     area_filtered_contours = sorted(area_filtered_contours, key=cv2.contourArea, reverse=True)
     #contourned_image = draw_shapes_and_contours(area_filtered_contours, np.zeros((thr_image_adaptive.shape)))
-    contourned_image=cv2.drawContours(np.zeros((thr_image_adaptive.shape)), contours=area_filtered_contours, contourIdx=-1, color=255, thickness=14)#, hierarchy=hierarchy, maxLevel=7)
+    contourned_image=cv2.drawContours(np.zeros((thr_image_adaptive.shape)), contours=area_filtered_contours, contourIdx=-1, color=255, thickness=5)#, hierarchy=hierarchy, maxLevel=7)
     cv2.namedWindow(f'{patient} {tile} contours', cv2.WINDOW_NORMAL)
     cv2.moveWindow(f'{patient} {tile} contours', 1920, 0)
     cv2.resizeWindow(f'{patient} {tile} contours', 1920, 1080)
     cv2.imshow(f'{patient} {tile} contours', contourned_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15,15))
+    close_image_33_ell = apply_morf_transformation('closing', kern, iterations=1, image=contourned_image)
+    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7,7))
+    close_image_33_ell_2 = apply_morf_transformation('closing', kern, iterations=2, image=close_image_33_ell)
+    visualize_imgs(f"Open image {patient} {tile} 2", close_image_33_ell_2, 1)
+
+    second_contours = cv2.findContours(close_image_33_ell_2, cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+    contourned_image_2 = cv2.drawContours(np.zeros((thr_image_adaptive.shape)), second_contours, -1, 255, 5)
+    visualize_imgs(f"Contourned image 2 {patient} {tile}", contourned_image_2, 1)
     return
     # Dumping the new processed images
     if write_intermediate_imgs:
@@ -483,7 +518,7 @@ def main():
     os.makedirs('data', exist_ok=True)
     
     if images_dir:
-        run_processing(images_dir, True, output, patient_start = 'BPM', tile_start = 25, write_intermediate_imgs=True)
+        run_processing(images_dir, True, output, patient_start = 'CB', tile_start = 25, write_intermediate_imgs=True)
     else:
         run_processing(full_image_path, output, is_img_file=True)
 
