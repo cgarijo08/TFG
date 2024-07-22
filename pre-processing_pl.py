@@ -1,5 +1,6 @@
 import cv2
 import os
+from sys import exit
 import traceback
 from shutil import rmtree
 import numpy as np
@@ -52,6 +53,8 @@ def setup_logger(type_message, patient = None):
 
 def extract_number(filename):
     return int(filename.split('.')[0])
+def tiff_from_number(number):
+    return str(number)+".tiff"
 
 def is_white_image(img):
     if np.var(img[:,:,0]) < 40:
@@ -83,7 +86,7 @@ def draw_shapes_and_contours(contours, img):
     mask = np.zeros(img.shape[:2], dtype=np.uint8)
     for cnt in contours:
         cv2.drawContours(mask, [cnt], -1, color=255, thickness=-1)
-        cv2.drawContours(mask, [cnt], -1, 128, 5)
+        cv2.drawContours(mask, [cnt], -1, 128, 10)
     return mask
 
 def process_image(full_image_path, is_WSI, output = None, write_intermediate_imgs=False):
@@ -158,7 +161,8 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     #shifted_image = cv2.pyrMeanShiftFiltering(patch_of_the_image, 20, 30)
 
     # First we convert the patch from BGR to Grayscale
-    bw_patch_of_the_image = cv2.cvtColor(patch_of_the_image, cv2.COLOR_BGR2GRAY)
+    #bw_patch_of_the_image = cv2.cvtColor(patch_of_the_image, cv2.COLOR_BGR2GRAY)
+    bw_patch_of_the_image = patch_of_the_image[:,:,2]
 
     # Dump the images processed with simple cv2.threshold method
     if write_intermediate_imgs:
@@ -168,7 +172,71 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
 
     # Obtaining the thresholded image with otsu and triangle algorithms
     _, thr_image_otsu = cv2.threshold(bw_patch_of_the_image,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+    thr_image_adaptive = cv2.adaptiveThreshold(bw_patch_of_the_image[:,:], 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV , 51, 15)
+    cv2.namedWindow(f'{patient} {tile} adaptive', cv2.WINDOW_NORMAL)
+    cv2.namedWindow(f'{patient} {tile} original', cv2.WINDOW_NORMAL)
+    cv2.moveWindow(f'{patient} {tile} adaptive', 0,0)
+    cv2.moveWindow(f'{patient} {tile} original', 1920, 0)
+    cv2.resizeWindow(f'{patient} {tile} adaptive', 1920, 1080)
+    cv2.resizeWindow(f'{patient} {tile} original', 1620, 1050)
+    cv2.imshow(f'{patient} {tile} adaptive', thr_image_adaptive)
+    cv2.imshow(f'{patient} {tile} original', thr_image_otsu)
+    cv2.waitKey(0)
+    cv2.destroyWindow(f'{patient} {tile} original')
+    
+    contours, hierarchy = cv2.findContours(thr_image_adaptive, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
 
+    '''biggest_contour = -1 # Biggest area calculated for the next section.
+    biggest_idx = -1
+    for idx, cnt in enumerate(contours):
+        cnt_area = cv2.contourArea(cnt)
+        if cnt_area > biggest_contour:
+            biggest_contour = cnt_area # Biggest area calculated for the next section.
+            biggest_idx = idx
+    
+    child_contours = []
+    first_child = hierarchy[0][biggest_idx][2] # We obtain the index of the first child ( hierarchy[0][i] = [next, previous, child, parent] )
+
+    child_contours.append(contours[first_child]) # We append the first child to the array of child contours
+    next_idx = hierarchy[0][first_child][0] # We obtain the idx of the next value. (hierarcy[0][first_child][1] gives -1 value)
+
+    while(next_idx != -1): # Hierarchy doesn't have circularity. It has a first and a last contours for each hierarchy.
+        child_contours.append(contours[next_idx]) 
+        next_idx = hierarchy[0][next_idx][0]
+
+    child_contours.append(contours[biggest_idx]) # We append the every contours' father.
+'''
+    
+    '''nxbiggest = biggest_idx
+    while hierarchy[0][nxbiggest][0] != -1:
+        next_bgidx = hierarchy[0][biggest_idx][0]
+        first_child = hierarchy[0][next_bgidx][2] # We obtain the index of the first child ( hierarchy[0][i] = [next, previous, child, parent] )
+        
+        if first_child == -1:
+            continue
+        child_contours.append(contours[first_child]) # We append the first child to the array of child contours
+        next_idx = hierarchy[0][first_child][0] # We obtain the idx of the next value. (hierarcy[0][first_child][1] gives -1 value)
+
+        while(next_idx != -1): # Hierarchy doesn't have circularity. It has a first and a last contours for each hierarchy.
+            child_contours.append(contours[next_idx]) 
+            next_idx = hierarchy[0][next_idx][0]
+        child_contours.append(contours[next_bgidx])
+        nxbiggest = hierarchy[0][nxbiggest][0]
+'''
+    area_filtered_contours = []
+    for cnt in contours:
+        if cv2.contourArea(cnt) > 2000:# and get_circularity(cnt) > 0.1:
+            area_filtered_contours.append(cnt)
+    area_filtered_contours = sorted(area_filtered_contours, key=cv2.contourArea, reverse=True)
+    #contourned_image = draw_shapes_and_contours(area_filtered_contours, np.zeros((thr_image_adaptive.shape)))
+    contourned_image=cv2.drawContours(np.zeros((thr_image_adaptive.shape)), contours=area_filtered_contours, contourIdx=-1, color=255, thickness=14)#, hierarchy=hierarchy, maxLevel=7)
+    cv2.namedWindow(f'{patient} {tile} contours', cv2.WINDOW_NORMAL)
+    cv2.moveWindow(f'{patient} {tile} contours', 1920, 0)
+    cv2.resizeWindow(f'{patient} {tile} contours', 1920, 1080)
+    cv2.imshow(f'{patient} {tile} contours', contourned_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    return
     # Dumping the new processed images
     if write_intermediate_imgs:
         cv2.imwrite(os.path.join(temp_folder_path, 'thr_image_otsu.png'), thr_image_otsu)
@@ -329,7 +397,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     with open(os.path.join(folder_path, patient, tile, 'patch_features.json'), 'w') as file:
         json.dump(patch_features, file, indent=4, ensure_ascii=False)
 
-def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patient_start = None, write_intermediate_imgs = False):
+def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patient_start = None, tile_start = None, write_intermediate_imgs = False):
     if not is_img_file:
         parent_folder_images = os.listdir(img_dir)
         parent_folder_images = sorted(parent_folder_images)
@@ -361,10 +429,20 @@ def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patie
                     logger.error(f"{temp_folder} PATH DOESN'T EXIST.")
                     continue
                 temp_images = sorted(os.listdir(temp_folder), key=extract_number)
+                if tile_start is not None:
+                    try:
+                        temp_images = temp_images[temp_images.index(tiff_from_number(tile_start)):]
+                    except:
+                        traceback.format_exc()
+                        continue
                 for temp in temp_images:
                     image_path = os.path.join(temp_folder, temp)
                     try:
                         process_image(full_image_path=image_path, is_WSI=False, output=output, write_intermediate_imgs=write_intermediate_imgs)
+                        break
+                    except KeyboardInterrupt:
+                        print(traceback.format_exc())
+                        exit()
                     except:
                         setup_logger(CANT_LOAD_IMAGE)
                         logger.error(f"Patient: {patient}, tile: {temp} COULDN'T BE PROCESSED.\nError: {traceback.format_exc()}\n\n")
@@ -405,7 +483,7 @@ def main():
     os.makedirs('data', exist_ok=True)
     
     if images_dir:
-        run_processing(images_dir, True, output, patient_start = 'BPM', write_intermediate_imgs=True)
+        run_processing(images_dir, True, output, patient_start = 'BPM', tile_start = 25, write_intermediate_imgs=True)
     else:
         run_processing(full_image_path, output, is_img_file=True)
 
