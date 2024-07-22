@@ -255,7 +255,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
             area_filtered_contours.append(cnt)
     area_filtered_contours = sorted(area_filtered_contours, key=cv2.contourArea, reverse=True)
     #contourned_image = draw_shapes_and_contours(area_filtered_contours, np.zeros((thr_image_adaptive.shape)))
-    contourned_image=cv2.drawContours(np.zeros((thr_image_adaptive.shape)), contours=area_filtered_contours, contourIdx=-1, color=255, thickness=5)#, hierarchy=hierarchy, maxLevel=7)
+    contourned_image=cv2.drawContours(np.zeros((thr_image_adaptive.shape), dtype=np.uint8), contours=area_filtered_contours, contourIdx=-1, color=255, thickness=5)#, hierarchy=hierarchy, maxLevel=7)
     cv2.namedWindow(f'{patient} {tile} contours', cv2.WINDOW_NORMAL)
     cv2.moveWindow(f'{patient} {tile} contours', 1920, 0)
     cv2.resizeWindow(f'{patient} {tile} contours', 1920, 1080)
@@ -268,9 +268,24 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     close_image_33_ell_2 = apply_morf_transformation('closing', kern, iterations=2, image=close_image_33_ell)
     visualize_imgs(f"Open image {patient} {tile} 2", close_image_33_ell_2, 1)
 
-    second_contours = cv2.findContours(close_image_33_ell_2, cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
-    contourned_image_2 = cv2.drawContours(np.zeros((thr_image_adaptive.shape)), second_contours, -1, 255, 5)
+    second_contours, second_hierarchy = cv2.findContours(close_image_33_ell_2, cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+    contourned_image_2 = cv2.drawContours(np.zeros((thr_image_adaptive.shape), dtype=np.uint8), second_contours, -1, 255, 5)
     visualize_imgs(f"Contourned image 2 {patient} {tile}", contourned_image_2, 1)
+
+    # Second area filter
+    area_filtered_second_contours = []
+    for cnt in second_contours:
+        for point in cnt:
+            if any([coord == 0 for coord in point[0]]):
+                break
+            if point[0][0] == full_image.shape[1]-1:
+                break
+            if point[0][1] == full_image.shape[0]-1:
+                break
+        if cv2.contourArea(cnt) > 2000 and get_circularity(cnt) > 0.1:
+            area_filtered_second_contours.append(cnt)
+    shape_and_contourned_image = draw_shapes_and_contours(area_filtered_second_contours, np.zeros((thr_image_adaptive.shape), dtype=np.uint8))
+    visualize_imgs([f"Adaptive {patient} {tile}", f"{patient} {tile}"], [thr_image_adaptive, shape_and_contourned_image], 0)
     return
     # Dumping the new processed images
     if write_intermediate_imgs:
