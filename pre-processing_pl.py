@@ -56,7 +56,7 @@ def extract_number(filename):
 def tiff_from_number(number):
     return str(number)+".tiff"
 
-def visualize_imgs(title, image, pos):
+def visualize_imgs(title, image, pos = None):
     if isinstance(title, list):
         cv2.namedWindow(title[0], cv2.WINDOW_NORMAL)
         cv2.namedWindow(title[1], cv2.WINDOW_NORMAL)
@@ -143,7 +143,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
         cv2.destroyAllWindows()
         return
     patch_features = {}
-    visualize_imgs("IMagen 1", full_image, 0)
+    visualize_imgs(f"{patient} {tile}", full_image, 0)
 
     # Creating the patient directory inside 'data/'
     patch_path = 'data/'+patient
@@ -183,9 +183,6 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
         patch_of_the_image = full_image
     
 
-    # Apply Mean Shift algorithm to smooth areas in the image
-    #shifted_image = cv2.pyrMeanShiftFiltering(patch_of_the_image, 20, 30)
-
     # First we convert the patch from BGR to Grayscale
     #bw_patch_of_the_image = cv2.cvtColor(patch_of_the_image, cv2.COLOR_BGR2GRAY)
     bw_patch_of_the_image = patch_of_the_image[:,:,2]
@@ -199,56 +196,11 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     # Obtaining the thresholded image with otsu and triangle algorithms
     _, thr_image_otsu = cv2.threshold(bw_patch_of_the_image,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
     thr_image_adaptive = cv2.adaptiveThreshold(bw_patch_of_the_image[:,:], 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV , 51, 15)
-    cv2.namedWindow(f'{patient} {tile} adaptive', cv2.WINDOW_NORMAL)
-    #cv2.namedWindow(f'{patient} {tile} original', cv2.WINDOW_NORMAL)
-    cv2.moveWindow(f'{patient} {tile} adaptive', 0,0)
-    #cv2.moveWindow(f'{patient} {tile} original', 0, 0)
-    cv2.resizeWindow(f'{patient} {tile} adaptive', 1920, 1080)
-    #cv2.resizeWindow(f'{patient} {tile} original', 1620, 1050)
-    cv2.imshow(f'{patient} {tile} adaptive', thr_image_adaptive)
-    #cv2.imshow(f'{patient} {tile} original', thr_image_otsu)
-    cv2.waitKey(0)
-    cv2.destroyWindow(f'{patient} {tile} original')
+    
+    #visualize_imgs(f'{patient} {tile} adaptive', thr_image_adaptive, 0)
     
     contours, hierarchy = cv2.findContours(thr_image_adaptive, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
 
-    '''biggest_contour = -1 # Biggest area calculated for the next section.
-    biggest_idx = -1
-    for idx, cnt in enumerate(contours):
-        cnt_area = cv2.contourArea(cnt)
-        if cnt_area > biggest_contour:
-            biggest_contour = cnt_area # Biggest area calculated for the next section.
-            biggest_idx = idx
-    
-    child_contours = []
-    first_child = hierarchy[0][biggest_idx][2] # We obtain the index of the first child ( hierarchy[0][i] = [next, previous, child, parent] )
-
-    child_contours.append(contours[first_child]) # We append the first child to the array of child contours
-    next_idx = hierarchy[0][first_child][0] # We obtain the idx of the next value. (hierarcy[0][first_child][1] gives -1 value)
-
-    while(next_idx != -1): # Hierarchy doesn't have circularity. It has a first and a last contours for each hierarchy.
-        child_contours.append(contours[next_idx]) 
-        next_idx = hierarchy[0][next_idx][0]
-
-    child_contours.append(contours[biggest_idx]) # We append the every contours' father.
-'''
-    
-    '''nxbiggest = biggest_idx
-    while hierarchy[0][nxbiggest][0] != -1:
-        next_bgidx = hierarchy[0][biggest_idx][0]
-        first_child = hierarchy[0][next_bgidx][2] # We obtain the index of the first child ( hierarchy[0][i] = [next, previous, child, parent] )
-        
-        if first_child == -1:
-            continue
-        child_contours.append(contours[first_child]) # We append the first child to the array of child contours
-        next_idx = hierarchy[0][first_child][0] # We obtain the idx of the next value. (hierarcy[0][first_child][1] gives -1 value)
-
-        while(next_idx != -1): # Hierarchy doesn't have circularity. It has a first and a last contours for each hierarchy.
-            child_contours.append(contours[next_idx]) 
-            next_idx = hierarchy[0][next_idx][0]
-        child_contours.append(contours[next_bgidx])
-        nxbiggest = hierarchy[0][nxbiggest][0]
-'''
     area_filtered_contours = []
     for cnt in contours:
         if cv2.contourArea(cnt) > 2000:# and get_circularity(cnt) > 0.1:
@@ -256,26 +208,28 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
     area_filtered_contours = sorted(area_filtered_contours, key=cv2.contourArea, reverse=True)
     #contourned_image = draw_shapes_and_contours(area_filtered_contours, np.zeros((thr_image_adaptive.shape)))
     contourned_image=cv2.drawContours(np.zeros((thr_image_adaptive.shape), dtype=np.uint8), contours=area_filtered_contours, contourIdx=-1, color=255, thickness=5)#, hierarchy=hierarchy, maxLevel=7)
-    cv2.namedWindow(f'{patient} {tile} contours', cv2.WINDOW_NORMAL)
-    cv2.moveWindow(f'{patient} {tile} contours', 1920, 0)
-    cv2.resizeWindow(f'{patient} {tile} contours', 1920, 1080)
-    cv2.imshow(f'{patient} {tile} contours', contourned_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15,15))
+    
+    #visualize_imgs(f'{patient} {tile} contours', contourned_image, 1)
+
+    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25,25))
     close_image_33_ell = apply_morf_transformation('closing', kern, iterations=1, image=contourned_image)
     kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7,7))
     close_image_33_ell_2 = apply_morf_transformation('closing', kern, iterations=2, image=close_image_33_ell)
-    visualize_imgs(f"Open image {patient} {tile} 2", close_image_33_ell_2, 0)
 
     second_contours, second_hierarchy = cv2.findContours(close_image_33_ell_2, cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
     contourned_image_2 = cv2.drawContours(np.zeros((thr_image_adaptive.shape), dtype=np.uint8), second_contours, -1, 255, 5)
-    visualize_imgs(f"Contourned image 2 {patient} {tile}", contourned_image_2, 0)
+    #visualize_imgs([f"Close image {patient} {tile} 2", f"Contourned image 2 {patient} {tile}"], [close_image_33_ell_2, contourned_image_2], 1)
+
+    invert_close_image = cv2.bitwise_not(close_image_33_ell_2)
+    inv_second_contours, inv_second_hierarchy = cv2.findContours(invert_close_image, cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
+    inv_contourned_image = cv2.drawContours(np.zeros((thr_image_adaptive.shape), dtype=np.uint8), inv_second_contours, -1, 255, 5)
+    inv_contourned_image_fill = cv2.drawContours(np.zeros((thr_image_adaptive.shape), dtype=np.uint8), inv_second_contours, -1, 255, -1)
+    #visualize_imgs([f"Inverted {patient} {tile}", f"Inverted fill {patient} {tile}"], [inv_contourned_image, inv_contourned_image_fill], 0)
 
     # Second area filter
     isboundary = False
     area_filtered_second_contours = []
-    for cnt in second_contours:
+    for idx, cnt in enumerate(second_contours):
         isboundary = False
         for point in cnt:
             if any([coord == 0 for coord in point[0]]):
@@ -291,7 +245,47 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
             if cv2.contourArea(cnt) > 2000 and get_circularity(cnt) > 0.1:
                 area_filtered_second_contours.append(cnt)
     shape_and_contourned_image = draw_shapes_and_contours(area_filtered_second_contours, np.zeros((thr_image_adaptive.shape), dtype=np.uint8))
-    visualize_imgs([f"Adaptive {patient} {tile}", f"{patient} {tile}"], [thr_image_adaptive, shape_and_contourned_image], 0)
+    #visualize_imgs([f"Original {patient} {tile}", f"{patient} {tile}"], [patch_of_the_image, shape_and_contourned_image], 0)       
+
+    # Invertied
+    isboundary = False
+    inv_area_filtered_second_contours = []
+    for idx, cnt in enumerate(inv_second_contours):
+        isboundary = False
+        for point in cnt:
+            if any([coord == 0 for coord in point[0]]):
+                isboundary = True
+                break
+            if point[0][0] == full_image.shape[1]-5:
+                isboundary = True
+                break
+            if point[0][1] == full_image.shape[0]-5:
+                isboundary = True
+                break
+        if not isboundary:
+            if cv2.contourArea(cnt) > 2000 and get_circularity(cnt) > 0.1:
+                inv_area_filtered_second_contours.append(cnt)
+    inv_shape_and_contourned_image = draw_shapes_and_contours(inv_area_filtered_second_contours, np.zeros((thr_image_adaptive.shape), dtype=np.uint8))
+    cv2.namedWindow(f"Original {patient} {tile}", cv2.WINDOW_NORMAL)
+    cv2.moveWindow(f"Original {patient} {tile}", 0,0)
+    cv2.resizeWindow(f"Original {patient} {tile}", 1900, 1080)
+    cv2.imshow(f"Original {patient} {tile}", patch_of_the_image)
+    visualize_imgs([f"Shape and contours {patient} {tile}", f" Inverted shape and contours {patient} {tile}"], [shape_and_contourned_image, inv_shape_and_contourned_image], 0)         
+
+    return
+    if len(area_filtered_second_contours) > 0:
+        patch_features = get_patch_features(area_filtered_second_contours, patch_of_the_image.shape[:2])
+
+
+    H_mean, A_mean, B_mean = get_avg_colour(patch_of_the_image)
+    patch_features["avg_colour"] = {
+        "hue" : H_mean,
+        "A" : A_mean,
+        "B": B_mean
+    }
+    
+    with open(os.path.join(folder_path, patient, tile, 'patch_features.json'), 'w') as file:
+        json.dump(patch_features, file, indent=4, ensure_ascii=False)
     return
     # Dumping the new processed images
     if write_intermediate_imgs:
@@ -539,7 +533,7 @@ def main():
     os.makedirs('data', exist_ok=True)
     
     if images_dir:
-        run_processing(images_dir, True, output, patient_start = 'CSE', tile_start = 25, write_intermediate_imgs=True)
+        run_processing(images_dir, True, output, patient_start = 'FIS005', tile_start = 25, write_intermediate_imgs=True)
     else:
         run_processing(full_image_path, output, is_img_file=True)
 
