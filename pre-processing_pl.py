@@ -70,7 +70,7 @@ def create_result_hanlder(logger):
 
 def process_image(full_image_path, is_WSI, output = None, write_intermediate_imgs=False):
     try:
-        #start_process = time.time()
+        start_process = time.time()
         # Reading image
         if full_image_path:
             path_to_full_image = full_image_path
@@ -87,7 +87,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
             tile = ''
         if not os.path.isfile(path_to_full_image):
             raise FileNotFoundError('The path you introduced doesn\'t refer to any existing image. Please, make sure you introduce the correct path')
-        full_image=cv2.imread(path_to_full_image)
+        full_image=cv2.imread(full_image_path)
         if is_white_image(full_image):
             raise WhiteImageWarning("White image")
         patch_features = {}
@@ -192,6 +192,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
         if not len(inv_area_filtered_second_contours) > 0:
             raise NoContoursWarning("No contours")
         cv2.imwrite(os.path.join(output_path, 'shape_and_contours.png'), inv_shape_and_contourned_image)
+        start = time.time()
         patch_features = get_patch_features(inv_area_filtered_second_contours, patch_of_the_image.shape[:2])
         H_mean, A_mean, B_mean = get_avg_colour(patch_of_the_image)
         patch_features["avg_colour"] = {
@@ -199,13 +200,13 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
             "A" : A_mean,
             "B": B_mean
         }
-        #print(f'Features extracted in {time.time()-start}')
+        print(f'{patient} {tile}: Features extracted in {time.time()-start}')
         
         #visualize_imgs([f"Orig with contours {patient} {tile}", f"Data"], [orig_with_contours, create_plot(patch_features)])
         #visualize_imgs(f"Orig with contours {patient} {tile}", orig_with_contours)
         with open(os.path.join(output_path, 'patch_features.json'), 'w') as file:
             json.dump(patch_features, file, indent=4, ensure_ascii=False)
-        #print(f"Whole process: {time.time()-start_process}\n")
+        print(f"{patient} {tile}: Whole process: {time.time()-start_process}\n")
         return True
     except WhiteImageWarning as e:
         return (WHITE_IMAGE, f"Tile: {tile} from patient: {patient} is a white image", patient)
@@ -225,7 +226,7 @@ def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patie
     process_function = partial(process_image, is_WSI=False, output=output, write_intermediate_imgs=write_intermediate_imgs)
 
     if not is_img_file:
-        with mp.Pool(processes=4) as pool:
+        with mp.Pool(processes=8) as pool:
             results = []
             parent_folder_images = os.listdir(img_dir)
             parent_folder_images = sorted(parent_folder_images)
@@ -253,7 +254,7 @@ def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patie
                 for patient in parent_folder_images:
                     temp_folder = os.path.join(img_dir, patient, 'data', 'temp')
                     if not os.path.exists(temp_folder):
-                        setup_logger(DIRECTORY_NOT_EXISTS)
+                        setup_logger(logger, DIRECTORY_NOT_EXISTS)
                         logger.error(f"{temp_folder} PATH DOESN'T EXIST.")
                         continue
                     temp_images = sorted(os.listdir(temp_folder), key=extract_number)
@@ -269,7 +270,7 @@ def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patie
                         results.append(result)
             for result in results:
                 result.wait()
-                        
+      
                     
 
     else:
