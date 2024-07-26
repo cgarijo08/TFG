@@ -101,7 +101,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
         print(patient, tile)
 
         output_path = os.path.join(output, patient, tile)
-        os.makedirs(output_path, exist_ok=True)
+        #os.makedirs(output_path, exist_ok=True) ## Puting it down so it doesnt create directory if there are no contours
 
         # Saving a compressed image for visualization
         if write_intermediate_imgs:
@@ -191,6 +191,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
             
         if not len(inv_area_filtered_second_contours) > 0:
             raise NoContoursWarning("No contours")
+        os.makedirs(output_path, exist_ok=True)
         cv2.imwrite(os.path.join(output_path, 'shape_and_contours.png'), inv_shape_and_contourned_image)
         start = time.time()
         patch_features = get_patch_features(inv_area_filtered_second_contours, patch_of_the_image.shape[:2])
