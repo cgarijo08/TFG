@@ -245,7 +245,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
 
     # Obtaining the thresholded image with an adaptive threshold
     thr_image_adaptive = cv2.adaptiveThreshold(bw_patch_of_the_image[:,:], 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV , 51, 15)
-    #visualize_imgs(f"thr {patient} {tile}", thr_image_adaptive, 0)
+    visualize_imgs(f"thr {patient} {tile}", thr_image_adaptive, 0)
     #open_img = apply_morf_transformation('opening', cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3)), 1, thr_image_adaptive)
     #visualize_imgs('open', open_img, 0)
     
@@ -257,7 +257,7 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
             area_filtered_contours.append(cnt)
     area_filtered_contours = sorted(area_filtered_contours, key=cv2.contourArea, reverse=True)
     contourned_image=cv2.drawContours(np.zeros((thr_image_adaptive.shape), dtype=np.uint8), contours=area_filtered_contours, contourIdx=-1, color=255, thickness=5)#, hierarchy=hierarchy, maxLevel=7)
-    #visualize_imgs(f"First contours {patient} {tile}", contourned_image)
+    visualize_imgs(f"First contours {patient} {tile}", contourned_image)
 
     kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25,25))
     close_image_33_ell = apply_morf_transformation('closing', kern, iterations=1, image=contourned_image)
@@ -288,27 +288,28 @@ def process_image(full_image_path, is_WSI, output = None, write_intermediate_img
                 inv_area_filtered_second_contours.append(cnt)
     inv_area_filtered_second_contours = sorted(inv_area_filtered_second_contours, key=cv2.contourArea, reverse=True)
     inv_shape_and_contourned_image = draw_shapes_and_contours(inv_area_filtered_second_contours, np.zeros((thr_image_adaptive.shape), dtype=np.uint8))
+    visualize_imgs([f"Inv closed image {patient} {tile}", f"Second contours {patient} {tile}"], [invert_close_image, cv2.drawContours(np.zeros((thr_image_adaptive.shape), dtype=np.uint8), inv_area_filtered_second_contours, -1, 255, 10)])
     orig_with_contours = cv2.drawContours(patch_of_the_image.copy(), inv_area_filtered_second_contours, -1, (0, 255, 0), 8)
          
     if not len(inv_area_filtered_second_contours) > 0:
         setup_logger(NO_CONTOURS, patient)
         logger.warning(f"Tile: {tile} from patient: {patient} has resulted in 0 contours.")
         return
-    cv2.imwrite(os.path.join(output_path, 'shape_and_contours.png'), inv_shape_and_contourned_image)
+    #cv2.imwrite(os.path.join(output_path, 'shape_and_contours.png'), inv_shape_and_contourned_image)
     start = time.time()
-    patch_features = get_patch_features(inv_area_filtered_second_contours, patch_of_the_image.shape[:2])
-    H_mean, A_mean, B_mean = get_avg_colour(patch_of_the_image)
-    patch_features["avg_colour"] = {
-        "hue" : H_mean,
-        "A" : A_mean,
-        "B": B_mean
-    }
+    #patch_features = get_patch_features(inv_area_filtered_second_contours, patch_of_the_image.shape[:2])
+    #H_mean, A_mean, B_mean = get_avg_colour(patch_of_the_image)
+    #patch_features["avg_colour"] = {
+    #    "hue" : H_mean,
+    #    "A" : A_mean,
+    #    "B": B_mean
+    #}
     print(f'Features extracted in {time.time()-start}')
     
-    #visualize_imgs([f"Orig with contours {patient} {tile}", f"Data"], [orig_with_contours, create_plot(patch_features)])
+    visualize_imgs([f"Orig with contours {patient} {tile}", f"Shapes and contours {patient} {tile}"], [orig_with_contours, inv_shape_and_contourned_image])#create_plot(patch_features)])
     #visualize_imgs(f"Orig with contours {patient} {tile}", orig_with_contours)
-    with open(os.path.join(output_path, 'patch_features.json'), 'w') as file:
-        json.dump(patch_features, file, indent=4, ensure_ascii=False)
+    #with open(os.path.join(output_path, 'patch_features.json'), 'w') as file:
+    #    json.dump(patch_features, file, indent=4, ensure_ascii=False)
     print(f"Whole process: {time.time()-start_process}\n")
 
 def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patient_start = None, tile_start = None, write_intermediate_imgs = False):
@@ -353,6 +354,7 @@ def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patie
                     image_path = os.path.join(temp_folder, temp)
                     try:
                         process_image(full_image_path=image_path, is_WSI=False, output=output, write_intermediate_imgs=write_intermediate_imgs)
+                        break
                     except KeyboardInterrupt:
                         print(traceback.format_exc())
                         exit()
@@ -396,7 +398,7 @@ def main():
     os.makedirs('data', exist_ok=True)
     
     if images_dir:
-        run_processing(images_dir, True, output, patient_start = None, tile_start = None, write_intermediate_imgs=False) #FIS001
+        run_processing(images_dir, True, output, patient_start = 'BPM', tile_start = 25, write_intermediate_imgs=False) #FIS001
     else:
         run_processing(full_image_path, output, is_img_file=True)
 
