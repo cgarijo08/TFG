@@ -1,6 +1,7 @@
 import os
 from typing import List
 import json
+import numpy as np
 
 def _valid_path(dir):
     if os.path.exists(dir):
@@ -29,12 +30,15 @@ class TileSampleDataset():
         self.load_data()
     
     def load_data(self):
+        with open("labels.json", "r", encoding="utf-8") as file:
+            labels = json.load(file)
         for pat in os.listdir(self.data_path):
             if pat == '0_logs':
                 continue
             pat_path = os.path.join(self.data_path, pat)
             for tile in os.listdir(pat_path):
                 tile_path = os.path.join(pat_path, tile)
+                
                 if os.path.exists(tile_path + '/patch_features.json'):
                     with open(tile_path + '/patch_features.json', 'r', encoding='utf-8') as file:
                         data = json.load(file)
@@ -45,7 +49,7 @@ class TileSampleDataset():
                                     data['std_circularity'], 
                                     data['avg_colour']['A'], 
                                     data['avg_colour']['B'],
-                                    1,
+                                    labels[pat],
                                     pat,
                                     tile))
     
@@ -62,8 +66,18 @@ class TileSampleDataset():
             if sample.patient == patient and sample.tile == tile:
                 return sample
     
+    def get_samples_from_patient(self, patient):
+        X_data = []
+        Y_data = []
+        for sample in self.samples:
+            if sample.patient == patient:
+                X_data.append(sample.X)
+                Y_data.append(sample.label)
+        return X_data, Y_data
+    
     def sample_from_idx(self, idx):
         return self.samples[idx]
+    
 
 
 
@@ -83,10 +97,12 @@ class ContourSample():
 class ContourSampleDataset():
     def __init__(self, dir:str | os.PathLike):
         self.data_path = _valid_path(dir)
-        self.samples:List[TileSample] = []
+        self.samples:List[ContourSample] = []
         self.load_data()
     
     def load_data(self):
+        with open("labels.json", "r", encoding="utf-8") as file:
+            labels = json.load(file)
         for pat in os.listdir(self.data_path):
             if pat == '0_logs':
                 continue
@@ -102,7 +118,7 @@ class ContourSampleDataset():
                             circ=instance["circularity"],
                             HuM=instance["HuM"],
                             Zernike=instance["Zernike"],
-                            label=1,
+                            label=labels[pat],
                             patient=pat,
                             tile=tile
                         ))
@@ -114,3 +130,20 @@ class ContourSampleDataset():
             X_data.append(sample.X)
             labels.append(sample.label)
         return [X_data, labels]
+    
+    def normalize_data(self):
+        X_data, _ = self.get_data()
+        means = np.mean(X_data, axis=0)
+        stds = np.std(X_data, axis=0)
+        X_data = (X_data - means) / stds
+        for idx, sample in enumerate(self.samples):
+            sample.X = X_data[idx]
+    
+    def get_samples_from_patient(self, patient):
+        X_data = []
+        Y_data = []
+        for sample in self.samples:
+            if sample.patient == patient:
+                X_data.append(sample.X)
+                Y_data.append(sample.label)
+        return X_data, Y_data

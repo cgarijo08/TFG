@@ -1,3 +1,5 @@
+import sys
+sys.path.append(".")
 import cv2
 import os
 from sys import exit
@@ -275,7 +277,7 @@ def run_processing(img_dir, are_tiles, output = None, is_img_file = False, patie
                     
 
     else:
-        process_image(full_image_path=img_dir, is_WSI=True, output=output)
+        process_image(full_image_path=img_dir, is_WSI=True, output=output, write_intermediate_imgs=write_intermediate_imgs)
     
 
 def main():
@@ -296,8 +298,8 @@ def main():
         start = None
     else:
         start = args.start
-    if images_dir == None:
-        images_dir = '/media/gdem/SSD/Carlos_data/DRY_SERUMS/patients/'
+    #if images_dir == None:
+    #    images_dir = '/media/gdem/SSD/Carlos_data/DRY_SERUMS/patients/'
     if output == None:
         output = '/home/gdem/Documents/Data/Processed_images_v2'
     if args.w:

@@ -1,0 +1,119 @@
+Id,PATIENT,Classification,Bloque,Slot,COLOR,APTO,TIPO,Description
+1,1160,1,6,23,Transparente-amarillento,SI,2,Bordes bastante buenos. Centro con “grasa” oscuro.
+2,1198,1,6,28,Transparente-negro,SI,2,Bordes transparentes centro negro y homogéneo. Cristalización marcada y definida
+3,1206,1,6,32,Transparente,SI,3,Bordes y centro transparentes. Borde cristalización marcada y definida. Centro transparente pero caótico
+4,1207,3,3,3,Transparente-amarillento,SI,3-2,Bordes transparente centro con cantidad de negro medio. Centro más caótico. Cristalización marcada y definida
+5,1208,2,3,4,Transparente-amarillento,MEDIO,6,"Toda la muestra homogénea con fragmentos muy pequeños, tipo chocapic"
+6,1266,1,3,32,Transparente-amarillento,MEDIO,2,Muy similar a 1208
+7,1288,1,3,48,Transparente,SI,1,"Muy transparente en toda la muestra. Cristalización marcada y definida en toda la muestra, homogénea"
+8,ADPR,3,6,54,Transparente,MEDIO,3,Transparente. Borde con cristalización de fragmentos grandes y marcados. Centro bastante caótico de fragmentos más pequeños
+9,BNM,0,5,76,Amarillento,MEDIO,4,Amarillento y opaco. Cristales bastante grandes.
+10,CB,3,2,4,Transparente,MEDIO,3,Bordes transparentes pero grandes. Centro con Cs pero se difuminan un poco.
+11,CSE,3,6,53,Transparente,MEDIO,3,Transparente. Borde con cristalización de fragmentos grandes y marcados. Centro bastante caótico de fragmentos más pequeños
+12,DJR,1,4,54,Transparente-amarillento,SI,5,Cristalización marcada y definida. Un poco opaco. Homogéneo. Centro de la muestra se difuminan los cristales.
+13,DRH,3,2,1,Transparente-amarillento,SI,5,Cristalización marcada y definida. Un poco opaco. Homogéneo. Centro de la muestra se difuminan los cristales.
+14,EBA,1,4,14,Amaillento.,MEDIO,4,"Amarillento claro, opaco. Cristales definidos y muy grandes, a lo largo de toda la muestra."
+15,FIS001,1,7,21,Amarillo anaranjado,MEDIO,3-4,Amarillento y opaco. Borde como tipo 4 pero centro como tipo 3.
+16,FIS205,1,9,42,Transparente,NO,3-4,Como anterior pero de color transparente.
+17,FIS206,1,9,43,Transparente,SI,3,"En borde cristalización definida, en centro Cs"
+18,FIS213,1,9,50,Amarillento,SI,3-4,Como anterior pero de color amarillento
+19,FIS264,1,9,100,Transparente-amarillento,SI,1-2,Muy buena cristalización en toda la muestra pero en el centro se superponen unos gusanos negros. Transparente-amarillento
+20,GRO,0,5,88,Transparente-amarillento,MEDIO,4,Cristales bastante grandes y a lo largo de toda la muestra. Borde transparente y centro amarillo.
+21,ICS,0,5,61,Transparente-amarillento,SI,2,"Borde transparente, centro amarillo. Cristalización marcada y definida en los bordes. EN centro buena cristalización pero se ensucia un poco."
+22,IDFD,3,5,56,Transparente-amarillento,SI,2,"Borde transparente, centro amarillo. Cristalización marcada y definida en los bordes. EN centro buena cristalización pero se ensucia un poco."
+23,IPS,0,5,72,Transparente-amarillento,SI,1,Como anterior pero el centro está algo más limpio.
+24,JAOL,2,1,34,Transparente,MEDIO,4,Tipo 4 pero de color transparente. Con gusanitos muy pequeños en todo el centro de la muestra
+25,JBNB,3,1,26,Transparente,MEDIO,3,Borde transparente. Centro Cs. Cristalización marcada y definida en el borde pero fragmentos muy grandes.
+26,JCGR,1,6,49,Transparentes,SI,3,Muy transparente. Cristales definidos y marcados en borde. Buenos. Centro Cs.
+27,JCVP,1,5,59,Amarillento,SI,4,Completamente tipo 4
+28,JDF,0,5,75,Transparente-amarillento,SI,1,Muy buena cristalización en TODA la muestra. Color amarillento
+29,JMO,3,1,35,Transparente-amarillento,SI,2,Amarillento. Bordes con cristalización marcada y definida. Centro muy oscuro (tipo ejemplo). Tiene como grasa encima de Cs
+30,JMPC,2,4,10,Transparente,SI,1-4,"Muy buenos cristales. Transparentes. Afueras tipo 1, dentro tipo 4 pero más transparente."
+31,LLR,2,1,37,Amarillento,NO,6,"Toda la muestra homogénea con fragmentos muy pequeños, tipo chocapic"
+32,MCH,0,5,79,Transparente-amarillento,MEDIO,4,Cristales muy grandes. Amarillento transparente. Centro oscuro
+33,MCL,0,5,89,Transparente-amarillento,SI,1-2,"Cristales muy definidos y marcados en borde. Borde transparente. Centro algo guarro, pero sin llegar a tipo 2. Amarillento"
+34,MM1,1,6,65,Transparente,MEDIO,3,Borde con cristales muy grandes y rodeados por “grasa”. Centro muchas Cs. Transparente. Bordes un poco amarillentos
+35,MM2,3,6,66,Transparente,MEDIO,3,Muy parecida a la anterior
+36,MM29,2,6,93,Transparente-amarillento,MEDIO,5,"Relieve en centro. Bordes marrones y opacos. Cristales definidos medianos pero ""manchados"""
+37,MM3,1,6,67,Transparente,SI,3,"Parecidas a las anteriores pero mucho más limpia y parecida a tipo 3 puro. Bordes bastante definidos y buenos. Centro con Cs pero difuminados, hacen “grietas”"
+38,MM30,2,6,94,Transparente,MEDIO,3,Como MM3 pero cristales del borde son un pelín más grandes y con un tono amarillento.
+39,MM4,1,6,68,Transparente,NO,3,"Como tipo 3, pero los bordes tienen los fragmentos demasiado grandes como para sacar algo."
+40,MM41,1,7,4,Transparente-amarillento,MEDIO,3,Un tipo 3 pero más guarro. Más amarillento y sucios los bordes. Cs en el centro de la muestra.
+41,MM5,3,6,69,Transparente,SI,3,Buenos fragmentos en los bordes. Fragmentos rodeados de “grasa”. Cs en el centro.
+42,OES,0,1,16,Transparente-amarillento,SI,1-2 / 3-2,Buena cristalización en bordes. En el centro se mantiene buena cristalización pero hay Cs y se superpone un poco la “grasa”
+43,PGL,0,5,74,Transparente-amarillento,SI,1,Buena cristalización en toda la muestra. Color amarillento. Cristales cocéntricos.
+44,RMR,3,6,55,Transparente,MEDIO,3,Cristalización definida en bordes pero grandes y finos. Centro lleno de Cs y transparente. Tipo 3 pero bordes malillos
+45,SO,1,3,54,Transparente-amarillento,SI,4,Cristalización triangular. Centro un pelín amarillento. Muy buenos cristales en toda la muestra.
+46,TGO,0,5,78,Transparente-amarillento,SI,2,Cristalización buena en bordes. Centro manchado con “grasa”
+47,YAM,3,1,19,Transparente-amarillento,SI,3-2,Buena cristalización en bordes (tipo ejemplo). En centro hay Cs y una parte comida por la “grasa”.
+48,FIS002,1,7,22,Transparente,MEDIO,3,Cristalización en medio de tipo 3 (Cristalización en forma de Cs). Borde tirando a tipo 4. Cristales grandes y alargados.
+49,FIS003,1,7,23,Transparente,MEDIO,3,Muy parecida a la anterior. Centro tipo 3 y borde tipo 4 con los cristales más grandes todavía que FIS002
+50,FIS004,1,7,24,Transparente,SI,3,Tipo 3 pero está algo agrietada. Podría asemejarse un poco al tipo 6 pero hay diferencia entre centro y bordes.
+51,FIS005,1,7,25,Amarillenta,MEDIO,3-4 / 3-1,Parece tipo 3 pero es de un tono amarillento fuerte. En algunas zonas del borde los cristales se asemejan a tipo 1 y 2 pero en otras zonas cristales más grandes y alargados tipo 4.
+52,FIS006,1,7,26,Transparente,MEDIO,3-5,El centro tiene escamas como tipo 3 pero a la vez se difumina un poco como en 5. El borde tiene cristales grandes y alargados parecido a tipo 4.
+53,FIS007,1,7,27,Transparente,NO,3,Tipo 3 pero los cristales del borde son enormes. Como FIS002 y FIS003
+54,FIS137,1,8,76,ROJO,MEDIO,6,No es 6 del todo ya que el patrón no es exactamente homogéneo en toda la muestra. Única muestra observada con este color. Rojo muy fuerte
+55,FIS138,1,8,77,Transparente,SI,3,"Alrededor de los contornos hay un poco de ""grasa"" o suciedad marrón. Es un tipo 3 pero las escamas o Cs del centro de la muestra son más grandes que de costumbre."
+56,FIS139,1,8,78,Transparente,SI,3,"Alrededor de los contornos hay un poco de ""grasa"" o suciedad marrón."
+57,FIS140,1,8,79,Transparente,MEDIO,1-3,"Tiene suciedad o ""grasa"" alrededor de contornos. En el centro se forman Cs o escamas pero de tamaño mayor que el de tipo 3."
+58,FIS141,1,8,80,Grisaceo,MEDIO,1,Tipo 1 pero con suciedad por encima de la muestra.
+59,JDD,0,6,63,Opaco incoloro,MEDIO,,Patrones de cristalización circulares sobre el centro de la muestra. Color opaco. Muchas rugosidades. Parece tipo 6 pero no llega a ser del todo.
+60,DFS,0,5,62,Transparente-amarillento,MEDIO,4,Cristalización muy definida y transparente. Cristales grandes y triangulares. Tipo 4 pero muy limpia. Centro ligeramente más marrón que en bordes.
+61,LMMG,0,5,63,Transparente-marrón,SI,4,"Bordes muy definidos y cristalíneos. Centro con ""grasa marrón"" pero con cristales triangulares y grandes."
+62,MSA,0,1,12,Transparente-marrón,SI,7,"Bordes muy definidos y cristalíneos. Centro con ""grasa marrón"" y con patrones tipo ""gusanos"". Círculos grandes en centro muestra."
+63,VZV,0,5,64,Transparente,SI,1,Prácticamente igual que tipo 1 de ejemplo.
+64,DGP,0,5,65,Transparente-mattón,SI,4,Cristales definidos y transparentes en bordes. Centro marrón aunque con cristales triangulares y grandes.
+65,MRA,0,5,66,Transparente-marrón,SI,1,"Como muestra de ejemplo tipo 1 pero con más ""suciedad""."
+66,LJR,0,5,67,Transparente,SI,1,Tipo 1 muy limpia y más homogénea en color. Color ligeramente amarillento-marrón.
+67,BPM,0,5,68,Transparente-amarillento,SI,2,Centro oscuro bordes cristalíneos y transparentes. Definidos. Patrones de cristalización en toda la muestra
+68,ALGA,0,1,20,Transparente-marrón,SI,2,"Buena cristaloización en bordes (tipo ejemplo). En centro hay Cs y zona con ""grasa"" marrón dependiendo de la zona."
+69,NML,0,5,80,Transparente-amarillento,SI,2,Centro oscuro bordes cristalíneos y transparentes. Definidos. Patrones de cristalización en toda la muestra
+70,GGP,0,5,81,Transparente-amarillento,SI,2,Centro oscuro bordes cristalíneos y transparentes. Definidos. Patrones de cristalización en toda la muestra. Cirstalización ligeramente más grande.
+71,EST,0,5,83,Transparente-amarillento,SI,2,Centro oscuro pero algo más claro que general tipo 2. Bordes cristalíneos y definidos. Patrones en toda la muestra
+72,IB,0,5,84,Transparente-amarillento,SI,2,Centro oscuro pero algo más claro que general tipo 2. Bordes cristalíneos y definidos. Patrones en toda la muestra
+73,AEB,0,5,85,Transparente-amarillento,SI,2,Centro oscuro y borde cristalíneo y transparente. Patrones de cristalización más grandes que otras tipo 2.
+74,NSE,0,5,86,Transparente-amarillento,SI,2,Centro oscuro bordes cristalíneos y transparentes. Definidos. Patrones de cristalización en toda la muestra
+75,RPJ,0,5,87,Transparente-amarillento,SI,2,Centro oscuro pero algo más claro que general tipo 2. Bordes cristalíneos y definidos. Patrones en toda la muestra
+76,MM6,1,6,70,Transparente,SI,5,Patrones de cristaloización definidos y transparentes en bordes. Centro homogéneo con relieve muy fino
+77,MM7,3,6,71,Amarillento,MEDIO,7,"Amarillento. PAtrones en borde pero centro con muchas formas de ""gusano"" y cristales enormes sin formas definidas."
+78,MM8,3,6,72,Amarillento,MEDIO,7,"Muy parecido a MM7 pero centro se difumina algo más. Cristales gradnes en bordes y ""gusanos en centro"
+79,MM9,3,6,73,Transparente,MEDIO,5,Cristalización en bordes pequeña. Centro con relieve difuminado.
+80,MM10,3,6,74,Transparente,MEDIO,7,"Patrones en borde pero centro con muchas formas de ""gusano"" y cristales enormes sin formas definidas."
+81,MM12,1,6,76,Transparente,MEDIO,7,"Patrones en borde pero centro con muchas formas de ""gusano"" y cristales enormes sin formas definidas."
+82,MM13,1,6,77,Transparente,MEDIO,7,"Cristales grandes en bordes pero en centro ""gusanos"" aunque más redondos."
+83,MM14,3,6,78,Transparente,MEDIO,7,"Cristales grandes en bordes y ""gusanos en centro. Círculos cocéntricos en el centro de la muestra"
+84,MM15,1,6,79,Transparente,MEDIO,5,Cristales grandes en bordes. Centro difuso con relieves.
+85,MM16,3,6,80,Transparente,MEDIO,7,"Cristales medianos en bordes pero en centro ""gusanos""."
+86,MM17,3,6,81,Transparente-Amarillento,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" redondos."
+87,MM18,3,6,82,Transparente-Amarillento,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" redondos."
+88,MM19,3,6,83,Transparente,MEDIO,7,"Cristales grandes en bordes y ""gusanos en centro. Círculos cocéntricos en el centro de la muestra"
+89,MM20,3,6,84,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" redondos."
+90,MM22,3,6,86,Transparente-amarillento,MEDIO,5,Cristales grandes en bordes. Centro difuso con relieves.
+91,MM23,2,6,87,Transparente-Amarillento,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos""."
+92,MM24,1,6,88,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" pequeños."
+93,MM25,3,6,89,Transparente,MEDIO,5,Cristales grandes en bordes ligeramente amarillento. Centro difuso con relieves.
+94,MM26,1,6,90,Transparente,MEDIO,5,Cristales grandes en bordes. Centro difuso con relieves.
+95,MM27,1,6,91,Transparente-amarillento,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" redondos. Cristales muy grandes circulares en el centro de la muestra."
+96,MM28,1,6,92,Transparente-Amarillento,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"". Tiene ""grasa o suciedad sobre el centro de la muestra."
+97,MM31,1,6,95,Amarillento,MEDIO,5,Cristales grandes en bordes. Centro difuso con relieves. Grietas grandes en el centro
+98,MM32,2,6,96,Transparente-Amarillento,MEDIO,7,"Cristales grandes en bordes y ""gusanos en centro. Círculos cocéntricos en el centro de la muestra. Círculos MUY grandes y gruesos en el centro muestra"
+99,MM33,1,6,97,Transparente,MEDIO,7,"Cristales grandes en bordes y ""gusanos en centro. Círculos cocéntricos en el centro de la muestra"
+100,MM34,3,6,98,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"". Bordes ligeramente amarillentos. Algunos cristales circulares en centro muestra"
+101,MM35,1,6,99,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"". Bordes ligeramente amarillentos."
+102,MM37,1,6,100,Transparente-amarillenta,MEDIO,5,Tipo 5 pero bordes son algo amarillentos. Tiene un pelo.
+103,MM38,1,7,1,Transparente-Amarillento,MEDIO,7,"Cristales grandes en bordes y ""gusanos en centro. Círculos cocéntricos en el centro de la muestra. Círculos MUY grandes y gruesos en el centro muestra"
+104,MM39,1,7,2,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"". Centro de la muestra con ""grasa"" sobre los ""gusanos""."
+105,MM40,1,7,3,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" mezclado con relieve tipo 5. Bordes ligeramente amarillentos."
+106,MM42,3,7,5,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" pequeños. Bordes cristalinos."
+107,MM44,1,7,7,Transparente-amarillenta,SI,5,Cristales pequelos en bordes algo amarillentos. Centro con relieve y una mancha marrón en parte media-superior.
+108,MM45,3,7,8,Transparente,SI,5,Cristales medianos en bordes muy ligeramente amarillentos. Centro con relieve.
+109,MM47,1,7,9,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" pequeños. Bordes cristalinos."
+110,MM48,1,7,10,Transparente-amarillenta,SI,5,Cristales pequelos en bordes algo amarillentos. Centro con relieve. Algunas líneas negras en centro.
+111,MM49,2,7,11,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" pequeños. Bordes algo amarillentos."
+112,MM50,3,7,12,Transparente,MEDIO,7,"Cristales muy grandes en bordes. Centro con ""gusanos"" pequeños. Bordes cristalíneos."
+113,MM61,0,11,13,Transparente,SI,5,Cristales en bordes definidos y transparentes. Centro con relieve y difuso.
+114,MM62,0,11,14,Transparente,MEDIO,5,"Bordes grandes con ""grasa"" entre patrones. Bordes definidos y ligeramente amarillentos. Centro relieve. Algún círculo en el centro de la muestra."
+115,MM63,0,11,15,Transparente,MEDIO,7,"Cristales muy muy grandes en bordes. Centro con ""gusanos"" pequeños. Bordes cristalíneos. Con un poco de ""grasa"" en bordes."
+116,MM64,0,11,16,Transparente,SI,7,Cristales medianos en bordes. Cristalíneos y bien definidos. Gusanos un poco pequeños en centro circulares.
+117,MM65,0,11,17,Transparente,SI,7,Cristales medianos-pequeños en bordes bien definidos. Bordes ligeramente amarillentos. Gusanos en centro circulares. Grasa en cristales bordes.
+118,MM66,0,11,18,Transparente,SI,5,"Cristales medianos-pequeños en bordes bien definidos. Bordes transparentes con un poco de ""grasa"". Relieve en centro muestra."
